@@ -25,7 +25,7 @@ const M440_IMAGE_CDN = 'https://s2.m440.in';
 // mango-proxy/src/routes.ts). SCRAPER_M440_URL overrides this for local
 // testing (e.g. http://localhost:3228). M440_ORIGIN stays the identity
 // origin for externalUrl/externalId — never fetch directly against it.
-const M440_PROXY = 'https://mango-proxy.platformoctopus.workers.dev/m440';
+const M440_PROXY = 'https://fenix-proxy.knowledgeable-wishbone.workers.dev/m440';
 const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
 /** Check if a genre/category name is specifically "hentai" */

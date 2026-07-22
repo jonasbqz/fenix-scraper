@@ -13,7 +13,7 @@ import {
 
 const TAURUS_ORIGIN = 'https://lectortaurus.com';
 const TAURUS_PROXY_DEFAULT =
-  'https://mango-proxy.platformoctopus.workers.dev/taurus';
+  'https://fenix-proxy.knowledgeable-wishbone.workers.dev/taurus';
 
 /**
  * Madara / wp-manga scraper for Lector Taurus.
