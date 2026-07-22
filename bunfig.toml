@@ -1,0 +1,3 @@
+[run]
+# Bun auto-loads .env when running package.json scripts
+env = [".env"]

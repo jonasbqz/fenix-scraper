@@ -1,0 +1,25 @@
+services:
+  mango-scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mango-scraper
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      M440_SCRAPLING_COOKIES: "true"
+      M440_PYTHON: python3
+      M440_SOLVE_SCRIPT: /app/scripts/m440-solve.py
+      SCRAPER_STATUS_FILE: /app/data/scraper-status.json
+      SCRAPER_LOCK_FILE: /app/data/scraper-status.json.lock
+      RETRY_QUEUE_DB: /app/data/retry-queue.db
+      MANGO_IMAGE_DELAY_MS: "0"
+      MANGO_IMAGE_CHAPTER_DELAY_MS: "0"
+    volumes:
+      - scraper-data:/app/data
+    shm_size: "2gb"
+    restart: unless-stopped
+
+volumes:
+  scraper-data:

@@ -1,0 +1,25 @@
+{
+  "status": "running",
+  "pid": 410707,
+  "startedAt": "2026-07-02T19:52:33.022Z",
+  "heartbeatAt": "2026-07-03T06:16:22.970Z",
+  "mode": "m440_only",
+  "enabledScrapers": [
+    "m440"
+  ],
+  "running": [],
+  "lastRun": {
+    "m440": {
+      "ok": true,
+      "startedAt": "2026-07-03T06:15:22.569Z",
+      "finishedAt": "2026-07-03T06:15:32.582Z",
+      "result": {
+        "comics": 0,
+        "chapters": 0,
+        "errors": [
+          "Peerless scraper failed: Error: Connection terminated due to connection timeout"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+node_modules
+.git
+.env
+.env.*
+!.env.docker.example
+scraper-status.json
+scraper-status.json.lock
+retry-queue.db
+retry-queue.db-wal
+retry-queue.db-shm
+image-test
+.atl
+*.md
+!docker/README.md

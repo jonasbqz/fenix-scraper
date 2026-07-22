@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+image-test
+retry-queue.db
+retry-queue.db-wal
+retry-queue.db-shm
+.venv-scrapling
+data/m440-scrapling-session.json
+scripts/__pycache__/
