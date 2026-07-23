@@ -56,6 +56,8 @@ function getIntervalMinutes(name: ScraperName, getNumber: (key: string, fallback
       return getNumber('SCRAPER_NOBLEDICION_INTERVAL_MIN', 120);
     case 'taurus':
       return getNumber('SCRAPER_TAURUS_INTERVAL_MIN', 120);
+    case 'leercapitulo':
+      return getNumber('SCRAPER_LEERCAPITULO_INTERVAL_MIN', 120);
     case 'm440':
     case 'peerless':
       return getNumber('SCRAPER_M440_INTERVAL_MIN', 60);
@@ -68,6 +70,8 @@ function defaultOptionsFor(name: ScraperName) {
       return { startPage: 0, endPage: 0, postsPerPage: 6 };
     case 'taurus':
       return { startPage: 0, endPage: 0, postsPerPage: 6 };
+    case 'leercapitulo':
+      return { startPage: 1, endPage: 1 };
     case 'olympus':
       return { startPage: 1, endPage: 1 };
     case 'ikigai':
