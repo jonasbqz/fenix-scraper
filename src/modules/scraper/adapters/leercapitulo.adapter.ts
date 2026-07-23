@@ -56,7 +56,7 @@ export class LeerCapituloAdapter extends BaseScraperAdapter {
   ) {
     super(db, delayMs);
     this.baseUrl = (
-      baseUrl || process.env.SCRAPER_LEERCAPITULO_URL || LEERCAPITULO_PROXY_DEFAULT
+      baseUrl || process.env.SCRAPER_LEERCAPITULO_URL || LEERCAPITULO_ORIGIN
     ).replace(/\/$/, '');
   }
 
@@ -146,18 +146,7 @@ export class LeerCapituloAdapter extends BaseScraperAdapter {
     const seen = new Set<string>();
 
     try {
-      const response = await fetch(`${this.baseUrl}/`, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const html = await response.text();
+      const html = await this.fetchHtml(`${this.baseUrl}/`);
       const $ = cheerio.load(html);
 
       $('.hot-manga a[href*="/manga/"], .mainpage-manga a[href*="/manga/"]').each(
@@ -489,18 +478,37 @@ export class LeerCapituloAdapter extends BaseScraperAdapter {
   }
 
   private async fetchHtml(url: string): Promise<string> {
-    const response = await fetch(url, {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        },
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (response.ok) {
+        return await response.text();
+      }
+      this.logger.warn(`Primary fetch for ${url} returned ${response.status}. Falling back to direct origin.`);
+    } catch (err: any) {
+      this.logger.warn(`Primary fetch for ${url} failed (${err.message || err}). Falling back to direct origin.`);
+    }
+
+    const directUrl = this.toRealOriginUrl(url);
+    const directRes = await fetch(directUrl, {
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
       },
+      signal: AbortSignal.timeout(15000),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    if (!directRes.ok) {
+      throw new Error(`HTTP ${directRes.status}: ${directRes.statusText} on ${directUrl}`);
     }
 
-    return response.text();
+    return directRes.text();
   }
 
   private extractMangaSlug(url: string): string {
