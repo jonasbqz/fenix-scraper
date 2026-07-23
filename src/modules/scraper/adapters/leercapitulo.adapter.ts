@@ -8,6 +8,7 @@ import type { ScrapedComic, ScrapedChapter, ScraperResult } from '../scraper.typ
 import {
   isAdultGenreSlug,
   sanitizeGenreNames,
+  isDmcaBlocked,
   BaseScraperAdapter,
 } from './base.adapter';
 
@@ -368,9 +369,17 @@ export class LeerCapituloAdapter extends BaseScraperAdapter {
   }
 
   private async upsertComic(comic: ScrapedComic): Promise<number> {
+    if (isDmcaBlocked(comic.title, comic.slug)) {
+      throw new Error(`[DMCA Guard] Comic "${comic.title}" (${comic.slug}) is DMCA blocked.`);
+    }
+
     const existing = await this.db.query.comics.findFirst({
       where: eq(comics.slug, comic.slug),
     });
+
+    if (existing && existing.copyrighted) {
+      throw new Error(`[DMCA Guard] Comic "${comic.title}" is marked copyrighted=true in database.`);
+    }
 
     let comicId: number;
 

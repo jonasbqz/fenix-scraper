@@ -21,6 +21,68 @@ export function isAdultGenreSlug(slug: string): boolean {
   return ADULT_GENRE_SLUGS.includes(slug.toLowerCase());
 }
 
+// List of DMCA / Copyrighted Manga Slugs and Keywords that must NEVER be scraped or imported
+export const DMCA_BLOCKED_SLUGS = [
+  'one-piece',
+  'jujutsu-kaisen',
+  'my-hero-academia',
+  'boku-no-hero',
+  'boruto',
+  'naruto',
+  'bleach',
+  'dragon-ball',
+  'dragonball',
+  'kimetsu-no-yaiba',
+  'demon-slayer',
+  'chainsaw-man',
+  'shingeki-no-kyojin',
+  'attack-on-titan',
+  'solo-leveling',
+  'spy-x-family',
+  'tokyo-ghoul',
+  'black-clover',
+  'hunter-x-hunter',
+  'detective-conan',
+  'one-punch-man',
+  'death-note',
+  'fullmetal-alchemist',
+  'fairy-tail',
+  'berserk',
+  'vinland-saga',
+  'jojo',
+];
+
+export function isDmcaBlocked(title: string, slug: string): boolean {
+  const normSlug = (slug || '').toLowerCase().trim();
+  const normTitle = (title || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+
+  // Explicit title checks for famous DMCA titles
+  if (/\bone\s*piece\b/i.test(title) || /\bone\s*piece\b/i.test(normTitle) || /\bone-piece\b/i.test(normSlug)) {
+    return true;
+  }
+  if (/\bjujutsu\s*kaisen\b/i.test(normTitle)) return true;
+  if (/\bmy\s*hero\s*academia\b/i.test(normTitle) || /\bboku\s*no\s*hero\b/i.test(normTitle)) return true;
+  if (/\bboruto\b/i.test(normTitle) || /\bnaruto\b/i.test(normTitle)) return true;
+  if (/\bbleach\b/i.test(normTitle)) return true;
+  if (/\bdragon\s*ball\b/i.test(normTitle)) return true;
+  if (/\bkimetsu\s*no\s*yaiba\b/i.test(normTitle) || /\bdemon\s*slayer\b/i.test(normTitle)) return true;
+  if (/\bchainsaw\s*man\b/i.test(normTitle)) return true;
+
+  for (const blocked of DMCA_BLOCKED_SLUGS) {
+    const slugRegex = new RegExp(`(?:^|-)${blocked.replace(/-/g, '[-_]')}(?:$|-)`, 'i');
+    const titleRegex = new RegExp(`\\b${blocked.replace(/-/g, '[\\s-_]+')}\\b`, 'i');
+    if (slugRegex.test(normSlug) || titleRegex.test(normTitle)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /**
  * Reject scraped "genres" that are actually comic titles, view counts, etc.
  * Ikigai's old broad selector polluted `genres` with strings like:

@@ -8,6 +8,7 @@ import type { ScrapedComic, ScrapedChapter, ChapterListItem, ScraperResult } fro
 import {
   isAdultGenreSlug,
   sanitizeGenreNames,
+  isDmcaBlocked,
   BaseScraperAdapter,
 } from './base.adapter';
 
@@ -553,6 +554,10 @@ export class TaurusAdapter extends BaseScraperAdapter {
   }
 
   private async upsertComic(comic: ScrapedComic): Promise<number> {
+    if (isDmcaBlocked(comic.title, comic.slug)) {
+      throw new Error(`[DMCA Guard] Comic "${comic.title}" (${comic.slug}) is DMCA blocked.`);
+    }
+
     const externalUrl = `${TAURUS_ORIGIN}/manga/${comic.slug}/`;
 
     const existingComicScan = await this.db.query.comicScans.findFirst({

@@ -437,6 +437,10 @@ groupName = groupName || legacyCard.find('.card-body .card-title').first().text(
   }
 
   private async upsertComic(comic: ScrapedComic): Promise<{ comicId: number; comicScanId: number }> {
+    if (isDmcaBlocked(comic.title, comic.slug)) {
+      throw new Error(`[DMCA Guard] Comic "${comic.title}" (${comic.slug}) is DMCA blocked.`);
+    }
+
     const externalUrl = `${IKIGAI_ORIGIN}/series/${comic.slug}`;
     let scanGroupId = await this.ensureScanGroupForComic(comic);
 
