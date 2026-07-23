@@ -309,13 +309,29 @@ export class LeerCapituloAdapter extends BaseScraperAdapter {
   }
 
   private async scrapeChapterPages(realChapterUrl: string): Promise<string[]> {
-    const proxyChapterUrl = this.toProxyUrl(realChapterUrl);
+    let normalizedUrl = realChapterUrl;
+    if (!normalizedUrl.endsWith('/')) normalizedUrl += '/';
+
+    const proxyChapterUrl = this.toProxyUrl(normalizedUrl);
     const html = await this.fetchHtml(proxyChapterUrl);
     const $ = cheerio.load(html);
 
     let imageUrls: string[] = [];
 
-    const arrayDataText = $('#array_data').text().trim();
+    let arrayDataText =
+      $('#array_data').text().trim() ||
+      ($('#array_data').val() || '').trim() ||
+      ($('#array_data').attr('value') || '').trim();
+
+    if (!arrayDataText) {
+      const match =
+        html.match(/id=["']array_data["'][^>]*>([^<]+)</i) ||
+        html.match(/id=["']array_data["'][^>]*value=["']([^"']+)["']/i);
+      if (match) {
+        arrayDataText = match[1].trim();
+      }
+    }
+
     if (arrayDataText) {
       const decrypted = decryptLeerCapituloData(arrayDataText);
       if (decrypted) {
@@ -342,6 +358,10 @@ export class LeerCapituloAdapter extends BaseScraperAdapter {
           imageUrls.push(src);
         }
       });
+    }
+
+    if (imageUrls.length === 0) {
+      this.logger.warn(`Extracted 0 images for chapter: ${realChapterUrl}`);
     }
 
     return imageUrls;
