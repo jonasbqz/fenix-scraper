@@ -12,6 +12,7 @@
     "upload:smart": "bun run src/commands/upload.ts peerless",
     "upload-proxy": "bun run src/commands/upload-proxy.ts",
     "fix-double-urls": "bun run src/fix-double-urls.ts",
+    "rescrape:empty": "bun run src/commands/rescrape-empty.ts",
     "fix-covers": "bun run src/fix-covers.ts",
     "image-test": "bun run src/m440-image-test.ts",
     "cookie-test": "bun run src/m440-cookie-test.ts",

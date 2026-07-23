@@ -473,7 +473,7 @@ export class LeerCapituloAdapter extends BaseScraperAdapter {
     const existingChapter = await this.db.query.chapters.findFirst({
       where: and(
         eq(chapters.comicScanId, comicScan.id),
-        eq(chapters.chapterNumber, ch.chapterNumber.toString()),
+        eq(chapters.chapterNumber, ch.chapterNumber),
       ),
     });
 
@@ -482,17 +482,17 @@ export class LeerCapituloAdapter extends BaseScraperAdapter {
         .update(chapters)
         .set({
           title: ch.title,
-          pages: ch.pages,
+          urlPages: ch.pages,
           updatedAt: new Date(),
         })
         .where(eq(chapters.id, existingChapter.id));
     } else {
       await this.db.insert(chapters).values({
         comicScanId: comicScan.id,
-        chapterNumber: ch.chapterNumber.toString(),
+        chapterNumber: ch.chapterNumber,
         title: ch.title,
         slug: ch.slug,
-        pages: ch.pages,
+        urlPages: ch.pages,
       });
     }
   }
