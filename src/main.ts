@@ -11,10 +11,11 @@ interface CliOptions {
 function printUsage(): never {
   console.error(`
 Usage:
-  bun run scrape <ikigai|olympus|peerless|m440|nobledicion|taurus|all> [--start=1] [--end=3] [--posts-per-page=18]
+  bun run scrape <ikigai|olympus|peerless|m440|nobledicion|taurus|leercapitulo|all> [--start=1] [--end=3] [--posts-per-page=18]
 
 Examples:
   bun run scrape ikigai --start=1 --end=3
+  bun run scrape leercapitulo --start=1 --end=1
   bun run scrape nobledicion --start=0 --end=1 --posts-per-page=6
   bun run scrape taurus --start=0 --end=1 --posts-per-page=6
   SCRAPER_MODE=m440_only bun run scrape m440 --start=1 --end=1
@@ -44,6 +45,7 @@ function parseArgs(argv: string[]): CliOptions {
     "m440",
     "nobledicion",
     "taurus",
+    "leercapitulo",
     "all",
   ]);
   if (!valid.has(nameArg)) printUsage();

@@ -6,7 +6,8 @@ export type ScraperName =
   | 'peerless'
   | 'm440'
   | 'nobledicion'
-  | 'taurus';
+  | 'taurus'
+  | 'leercapitulo';
 export type ScraperMode = 'm440_disabled' | 'm440_only' | 'all';
 
 export function getScraperMode(config: EnvConfig): ScraperMode {
@@ -38,8 +39,8 @@ export function getScrapersForMode(mode: ScraperMode): ScraperName[] {
     case 'm440_only':
       return ['m440'];
     case 'all':
-      return ['ikigai', 'olympus', 'nobledicion', 'taurus', 'm440'];
+      return ['ikigai', 'olympus', 'nobledicion', 'taurus', 'leercapitulo', 'm440'];
     case 'm440_disabled':
-      return ['ikigai', 'olympus', 'nobledicion', 'taurus'];
+      return ['ikigai', 'olympus', 'nobledicion', 'taurus', 'leercapitulo'];
   }
 }

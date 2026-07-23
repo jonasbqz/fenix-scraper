@@ -8,6 +8,7 @@ import { IkigaiAdapter } from "./adapters/ikigai.adapter";
 import { PeerlessAdapter } from "./adapters/m440.adapter";
 import { NobledicionAdapter } from "./adapters/nobledicion.adapter";
 import { TaurusAdapter } from "./adapters/taurus.adapter";
+import { LeerCapituloAdapter } from "./adapters/leercapitulo.adapter";
 import type { ScraperResult } from "./scraper.types";
 import type { RetryQueue } from "@/lib/retry-queue";
 import { resolveM440BaseUrl } from "@/lib/m440-base-url";
@@ -66,6 +67,12 @@ export class ScraperService {
         );
       case "taurus":
         return this.scrapeTaurus(
+          options?.startPage,
+          options?.endPage,
+          options?.postsPerPage,
+        );
+      case "leercapitulo":
+        return this.scrapeLeerCapitulo(
           options?.startPage,
           options?.endPage,
           options?.postsPerPage,
@@ -181,6 +188,28 @@ export class ScraperService {
 
       this.logger.log(
         `Taurus scrape completed: ${result.comics} comics, ${result.chapters} chapters, ${result.errors.length} errors`,
+      );
+
+      return result;
+    });
+  }
+
+  private async scrapeLeerCapitulo(
+    startPage = 1,
+    endPage = 1,
+    postsPerPage = 18,
+  ): Promise<ScraperResult> {
+    return this.queue.enqueue("leercapitulo", async () => {
+      this.logger.log(
+        `Scraping LeerCapitulo pages ${startPage}-${endPage}...`,
+      );
+
+      const baseUrl = this.config.get<string>("SCRAPER_LEERCAPITULO_URL");
+      const adapter = new LeerCapituloAdapter(this.db, this.delayMs, baseUrl);
+      const result = await adapter.scrape(startPage, endPage, postsPerPage);
+
+      this.logger.log(
+        `LeerCapitulo scrape completed: ${result.comics} comics, ${result.chapters} chapters, ${result.errors.length} errors`,
       );
 
       return result;
