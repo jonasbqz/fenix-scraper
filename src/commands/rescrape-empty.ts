@@ -6,6 +6,34 @@ import { eq, and, sql } from 'drizzle-orm';
 
 const logger = new Logger('RescrapeEmptyChapters');
 
+async function resolveMangaUrl(comicTitle: string, comicSlug: string): Promise<string> {
+  try {
+    const searchUrl = `https://fenix-proxy.sasadane2.workers.dev/leercapitulo/search-autocomplete?term=${encodeURIComponent(comicTitle.slice(0, 20))}`;
+    const res = await fetch(searchUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+      },
+    });
+    if (res.ok) {
+      const items = (await res.json()) as any[];
+      if (Array.isArray(items) && items.length > 0) {
+        const found = items.find((i) => (i.link || '').includes(comicSlug)) || items[0];
+        if (found && found.link) {
+          return `https://www.leercapitulo.co${found.link}`;
+        }
+      }
+    }
+  } catch (e) {}
+
+  const nameSlug = comicTitle
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return `https://www.leercapitulo.co/manga/${comicSlug}/${nameSlug}/`;
+}
+
 async function main() {
   const scanSlug = process.argv[2] || 'leercapitulo';
   logger.log(`Starting re-scrape for empty chapters of scan group: "${scanSlug}"...`);
@@ -22,13 +50,10 @@ async function main() {
       process.exit(1);
     }
 
-    // Find all chapters with empty urlPages
-    const emptyChapters = await db
-      .select({
-        chapterId: chapters.id,
-        chapterNumber: chapters.chapterNumber,
-        chapterTitle: chapters.title,
-        chapterSlug: chapters.slug,
+    // Find all unique comics having empty chapters
+    const emptyComics = await db
+      .selectDistinct({
+        comicId: comics.id,
         comicSlug: comics.slug,
         comicTitle: comics.title,
       })
@@ -42,10 +67,10 @@ async function main() {
         ),
       );
 
-    logger.log(`Found ${emptyChapters.length} empty chapters to re-scrape for "${scanSlug}".`);
+    logger.log(`Found ${emptyComics.length} comics with empty chapters for "${scanSlug}".`);
 
-    if (emptyChapters.length === 0) {
-      logger.log('No empty chapters found. Everything is up to date!');
+    if (emptyComics.length === 0) {
+      logger.log('No comics with empty chapters found. Everything is up to date!');
       return;
     }
 
@@ -54,32 +79,24 @@ async function main() {
     let updatedCount = 0;
     let failedCount = 0;
 
-    for (let i = 0; i < emptyChapters.length; i++) {
-      const item = emptyChapters[i];
-      // Construct chapter URL for LeerCapitulo
-      // Example: https://www.leercapitulo.co/leer/<hash>/<manga-slug>/<chapter-num>/
-      const chapterNumStr = item.chapterNumber.toString().replace('.', ',');
-      const targetUrl = `https://www.leercapitulo.co/manga/${item.comicSlug}/`;
-
-      logger.log(
-        `[${i + 1}/${emptyChapters.length}] Re-scraping ${item.comicTitle} - Cap ${item.chapterNumber}...`,
-      );
+    for (let i = 0; i < emptyComics.length; i++) {
+      const comic = emptyComics[i];
+      logger.log(`[${i + 1}/${emptyComics.length}] Resolving manga URL for "${comic.comicTitle}"...`);
 
       try {
-        // Scrape comic pages by url
-        const res = await adapter.scrapeComicByUrl(item.comicSlug);
-        if (res.chapters > 0) {
-          updatedCount++;
-        }
+        const fullMangaUrl = await resolveMangaUrl(comic.comicTitle, comic.comicSlug);
+        logger.log(`[${i + 1}/${emptyComics.length}] Re-scraping "${comic.comicTitle}" via ${fullMangaUrl}...`);
+
+        const res = await adapter.scrapeComicByUrl(fullMangaUrl);
+        logger.log(`[${i + 1}/${emptyComics.length}] Finished "${comic.comicTitle}": ${res.chapters} chapters updated.`);
+        updatedCount++;
       } catch (err: any) {
-        logger.error(`Failed to re-scrape ${item.comicTitle} Cap ${item.chapterNumber}: ${err.message || err}`);
+        logger.error(`Failed to re-scrape "${comic.comicTitle}": ${err.message || err}`);
         failedCount++;
       }
     }
 
-    logger.log(
-      `Re-scrape completed! Successfully processed ${updatedCount} comics/chapters, ${failedCount} errors.`,
-    );
+    logger.log(`Re-scrape completed! Successfully processed ${updatedCount} comics, ${failedCount} errors.`);
   } finally {
     await close();
   }
