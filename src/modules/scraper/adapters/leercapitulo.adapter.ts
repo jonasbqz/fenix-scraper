@@ -13,7 +13,7 @@ import {
 
 const LEERCAPITULO_ORIGIN = 'https://www.leercapitulo.co';
 const LEERCAPITULO_PROXY_DEFAULT =
-  'https://fenix-proxy.knowledgeable-wishbone.workers.dev/leercapitulo';
+  'https://fenix-proxy.sasadane2.workers.dev/leercapitulo';
 
 export function decryptLeerCapituloData(data: string): string {
   const alphabet1 = "EzCIUe3plcrfxuv9hKOsVtkTA6ZjaXRQJ0wWqb5D8gm1nG7LoH2dFyNYB4PiMS";
@@ -56,7 +56,7 @@ export class LeerCapituloAdapter extends BaseScraperAdapter {
   ) {
     super(db, delayMs);
     this.baseUrl = (
-      baseUrl || process.env.SCRAPER_LEERCAPITULO_URL || LEERCAPITULO_ORIGIN
+      baseUrl || process.env.SCRAPER_LEERCAPITULO_URL || LEERCAPITULO_PROXY_DEFAULT
     ).replace(/\/$/, '');
   }
 
@@ -521,7 +521,8 @@ export class LeerCapituloAdapter extends BaseScraperAdapter {
   }
 
   private toProxyUrl(realUrl: string): string {
-    const path = realUrl.replace(/^https?:\/\/(www\.)?leercapitulo\.co/, '');
+    let path = realUrl.replace(/^https?:\/\/(www\.)?leercapitulo\.co/, '');
+    if (!path || path === '') path = '/';
     return `${this.baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
   }
 
